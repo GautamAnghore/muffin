@@ -148,7 +148,7 @@ App.SignupView = Backbone.View.extend({
 			$('#signup-fieldset').removeAttr("disabled");
 			$('#signup-submit-button').removeAttr("disabled");
 
-			alert("Passwords do not match");
+			$(".error-block").html("Passwords do not match");
 		}
 
 		return false;
@@ -156,8 +156,58 @@ App.SignupView = Backbone.View.extend({
 });
 
 
+App.LoginView = Backbone.View.extend({
+	el: '.container',
+	template: _.template($('#login-template').html()),
+	render: function() {
+		this.$el.html(this.template());
+	},
+	events: {
+		"submit #login-form" : "checkAndLogin"
+	},
+	checkAndLogin: function(ev) {
+		$('#login-fieldset').attr("disabled","disabled");
+		$('#login-submit-button').attr("disabled","disabled");
+		
+		var safe = {};
+
+		// TODO : validate the content and make it safe
+		safe.username = $("#username").val().trim();
+		safe.password = $("#password").val().trim();
+
+		App.user = new App.UserModel();
+		var promise = App.user.login({
+			username: safe.username,
+			password: safe.password
+		}, {
+			success: function(model, response, options) {
+				//TODO : navigate to the dashboard
+				App.router.navigate('', {trigger: true});
+			},
+			error: function(model, error, options) {
+				
+				$("#password").val('');
+				//show red for error
+				$("#password").parent().removeClass("has-success").addClass("has-error");
+				$("#username").parent().removeClass("has-success").addClass("has-error");
+				// reactivate the form
+				$('#login-fieldset').removeAttr("disabled");
+				$('#login-submit-button').removeAttr("disabled");
+
+				$(".error-block").html("Error : " + error.description);
+
+			}
+		});
+
+		return false;
+	}
+});
+
+
+
 var homeView = new App.HomeView();
 var signupView = new App.SignupView();
+var loginView = new App.LoginView();
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||| Routers |||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -187,12 +237,22 @@ App.AppRouter = Backbone.Router.extend({
 			signupView.render();
 		}
 	},
+	login: function() {
+		if(App.user.isLoggedIn()) {
+			App.errorMsg += "User already Logged In";
+			//TODO : navigate to dashboard insted of home
+			App.router.navigate('', {trigger: true});
+		}
+		else {
+			loginView.render();
+		}
+	},
 	logout: function() {
 		var user = Kinvey.Backbone.getActiveUser();
 		if(null !== user) {
 			user.logout({
 				success: function(model, response, options) {
-					App.errorMsg += "Successfully logged out" + response.kinvey;
+					App.errorMsg += response.fname + " ! you are successfully logged out!";
 					App.router.navigate('', {trigger: true});
 				},
 				error: function(model, error, options) {
@@ -200,6 +260,10 @@ App.AppRouter = Backbone.Router.extend({
 					App.router.navigate('', {trigger: true});
 				}
 			});
+		}
+		else {
+			App.errorMsg += "No User Logged In";
+			App.router.navigate('', {trigger: true});
 		}
 	}
 });

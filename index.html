@@ -26,13 +26,22 @@
 	
 	<!-- HomeView template -->
 	<script type="text/template" id="home-template">
-		<% if(obj.isLoggedIn()) { %>
-			<p><%- obj.get('username') %></p>
-			<a href="#/logout" class="btn btn-danger">Logout</a>
-		<% } else { %>
-			<p><button class="btn btn-success">Login</button></p>
-		<% } %>
+		<nav class = "navbar navbar-default">
+			<div class="container-fluid">
+				<div class="collapse navbar-collapse">
+					<% if(obj.isLoggedIn()) { %>
+						<ul class="nav navbar-nav navbar-right">
+							<li><a href="#/logout"><button class="btn btn-danger navbar-btn">Logout</button></a></li>
+						</ul>
+						<p class="navbar-text navbar-right">Signed in as <%- obj.get('username') %></p>
+					<% } else { %>
+						<p class="navbar-right"><a href="#/login" class="btn btn-success navbar-btn">Login</a></p>
+					<% } %>
+				</div>
+			</div>
+		</nav>
 		<header class="main-header col-md-12">
+			
 			<center>
 				<h1 class="main-heading">muffin</h1>
 				<h3 class="main-tagline">app to solve financial management and analysis problems</h3>
@@ -44,7 +53,7 @@
 				The app is built using Backbone.js. The datastore is provided by Kinvey as BaaS(Backend as a Service). The visualization tool used is c3.js.
 			</p>
 			<center>
-				<button class="btn-lg btn-warning">Get Started</button>
+				<a href="#/getstarted" class="btn-lg btn-warning">Get Started</a>
 			</center>
 		</section>
 	</script>
@@ -60,6 +69,9 @@
 		<section class="main-content">
 			<section class="signup-form col-md-8 col-md-offset-2">
 				<center>
+				<p class="error-block text-danger bg-danger">
+					
+				</p>
 				<form class="form-horizontal" id="signup-form">
 					<legend>Signup</legend>
 					<fieldset id="signup-fieldset">
@@ -113,6 +125,46 @@
 						</div>
 					</div>
 					<button type="submit" class="btn-lg btn-success" id="signup-submit-button">Sign Up</button>
+					</fieldset>
+				</form>
+				</center>
+			</section>
+		</section>
+	</script>
+
+	<!-- loginview template -->
+	<script type="text/template" id="login-template">
+		<header class="main-header col-md-12">
+			<center>
+				<h1 class="login-heading">muffin</h1>
+				<h3 class="login-tagline">app to solve financial management and analysis problems</h3>
+			</center>
+		</header>
+		<section class="main-content">
+			<section class="login-form col-md-6 col-md-offset-3">
+				<center>
+				<p class="error-block text-danger bg-danger">
+
+				</p>
+				<form class="form-horizontal" id="login-form">
+					<legend>Login</legend>
+					<fieldset id="login-fieldset">
+					<div class="form-group form-group-lg has-success">
+						<label for="username" class="sr-only">Username</label>
+						<div class="input-group">
+							<div class="input-group-addon">Username</div>
+							<input type="text" class="form-control" id="username" name="username" placeholder="username" required>
+						</div>
+					</div>
+					<div class="form-group form-group-lg has-success">
+						<label for="password" class="sr-only">Password</label>
+						<div class="input-group">
+							<div class="input-group-addon">Password</div>
+							<input type="password" class="form-control" id="password" name="password" placeholder="password" required>
+						</div>
+					</div>
+					
+					<button type="submit" class="btn-lg btn-success" id="login-submit-button">Login</button>
 					</fieldset>
 				</form>
 				</center>
