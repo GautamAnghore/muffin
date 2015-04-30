@@ -274,6 +274,9 @@
             Main Dashboard
             <small>financial monitor</small>
           </h1>
+          <div class="message-block">
+          	
+          </div> 
         </section>
 
         <section class="content">
@@ -281,6 +284,18 @@
         </section>
 	</script>
 	
+	<script type="text/template" id="messageview-template">
+		<p class="main-error-block text-danger bg-danger">
+			<% if(obj.get('error')) { %>
+				<%- obj.get('error') %>
+			<% } %> 
+		</p>
+        <p class="main-msg-block text-success bg-success">
+        <% if(obj.get('success')) { %>
+				<%- obj.get('success') %>
+			<% } %>
+        </p>
+	</script>
 	<!-- dashboard subview - footerview-template -->
 	<script type="text/template" id="footerview-template">	
 		<!-- To the right -->
@@ -295,25 +310,31 @@
 		<div class="col-md-6">
 			<div class="box box-danger">
 				<div class="box-header with-border">
-				    <h3 class="box-title">New Expense</h3>    
+				    <h3 class="box-title">New Expense</h3>
+				    <div id="expense-error-tag" class="box-tools pull-right" style="visibility:hidden;">
+				     	<span class="label label-danger">Error</span>
+				    </div>    
 				</div><!-- /.box-header -->
 				<div class="box-body">
-					<form class="form-horizontal">
+					<p class="newexpense-error-block text-danger bg-danger">
 						
+					</p>
+					<form class="form-horizontal" id="newexpense-form">
+						<fieldset id="newexpense-fieldset">
 						<div class="form-group">
 							<div class="col-md-12">
 								<div class="col-md-6">
-									<label for="expence-amt" class="sr-only">Expense Amount</label>
+									<label for="expense-amt" class="sr-only">Expense Amount</label>
 									<div class="input-group">
 										<div class="input-group-addon">Amount</div>
-										<input type="number" class="form-control input-sm" id="expence-amt" placeholder="New Expense" required>
+										<input type="number" class="form-control input-sm" id="expense-amt" placeholder="New Expense" required>
 									</div>
 								</div>
 								<div class="col-md-6">
-									<label for="expence-tag" class="sr-only">Expense Tag</label>
+									<label for="expense-tag" class="sr-only">Expense Tag</label>
 									<div class="input-group">
 										<div class="input-group-addon">Tag</div>
-										<input type="text" class="form-control input-sm" id="expence-tag" placeholder="Tag" required>
+										<input type="text" class="form-control input-sm" id="expense-tag" placeholder="Tag" required>
 									</div>
 								</div>
 							</div>
@@ -321,17 +342,17 @@
 						
 						<div class="form-group">
 							<div class="col-md-12">
-							<label for="expence-detail" class="sr-only">Expense Details</label>
+							<label for="expense-detail" class="sr-only">Expense Details</label>
 							<div class="input-group">
 								<div class="input-group-addon">Details</div>
-								<textarea class="form-control" rows=3 placeholder="Details of Expence" id="expence-detail" required></textarea>
+								<textarea class="form-control" rows=3 placeholder="Details of Expense" id="expense-detail" required></textarea>
 							</div>
 							</div>
 						</div>
-
+						</fieldset>
 						<div class="form-group">
 							<div class="col-md-12">
-								<button type="submit" class="btn btn-block btn-danger">Add</button>
+								<button type="submit" id="newexpense-submit" class="btn btn-block btn-danger">Add</button>
 							</div>
 						</div>
 					</form>
@@ -348,8 +369,10 @@
 				    <h3 class="box-title">New Income</h3>    
 				</div><!-- /.box-header -->
 				<div class="box-body">
-					<form class="form-horizontal">
-						
+					<p class="newexpense-error-block text-danger bg-danger">
+					</p>
+					<form class="form-horizontal" id="newincome-form">
+						<fieldset id="newincome-fieldset">
 						<div class="form-group">
 							<div class="col-md-12">
 								<div class="col-md-6">
@@ -378,10 +401,10 @@
 							</div>
 							</div>
 						</div>
-
+						</fieldset>
 						<div class="form-group">
 							<div class="col-md-12">
-								<button type="submit" class="btn btn-block btn-success">Add</button>
+								<button type="submit" id="newincome-submit" class="btn btn-block btn-success">Add</button>
 							</div>
 						</div>
 					</form>

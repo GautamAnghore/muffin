@@ -76,6 +76,64 @@ _.extend(App.UserModel, Kinvey.Backbone.StaticUserMixin);
 // Extending user collection to use with kinvey
 _.extend(App.UserCollection.prototype, Kinvey.Backbone.UserCollectionMixin);
 
+App.Entry = Backbone.Model.extend({
+	url: 'entry-book',
+	defaults: {
+		amount : 0,
+		tag : undefined,
+		details : undefined
+	}
+});
+_.extend(App.Entry.prototype, Kinvey.Backbone.ModelMixin);
+
+App.EntryBook = Backbone.Collection.extend({
+	model: App.Entry,
+	url: 'entry-book'
+});
+_.extend(App.EntryBook.prototype, Kinvey.Backbone.CollectionMixin);
+
+App.Message = Backbone.Model.extend({
+	defaults: {
+		msg: "",
+		error: "",
+		success: ""
+	}
+});
+
+App.message = new App.Message({});
+
+// Helper function to set the message(msg, success, error) in such a way that
+// the message get cleared after some time interval.
+// there might be a case if a new msg was added recently, so the timeout function has to
+// be reset. As otherwise new msg will not be shown long enough.
+
+App.chronMsgClear = null;
+function updateMessage(obj)
+{
+	//first check if there is already a timer running
+	//if yes clear that
+	if(App.chronMsgClear) {
+		clearTimeout(App.chronMsgClear);
+		App.chronMsgClear = null; 
+	}
+
+	// update the App.message with 'old message + new message'
+	var temp = {};
+	temp.msg = App.message.get('msg') + (obj.msg ? obj.msg : '');
+	temp.success = App.message.get('success') + (obj.success ? obj.success : '');
+	temp.error = App.message.get('error') + (obj.error ? obj.error : '');
+
+	App.message.set(temp);
+
+	// set the timer to clear the message after 3 sec
+	App.chronMsgClear = setTimeout(function () {
+		App.message.set({
+			msg: "",
+			error: "",
+			success: ""
+		});
+	},3000);
+}
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||| Views |||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -253,20 +311,82 @@ App.ContentView = Backbone.View.extend({
 	initialize: function() {
 		this.newExpenseView = new App.NewExpenseView();
 		this.newIncomeView = new App.NewIncomeView();
+		this.messageView = new App.MessageView();
 	},
 	render: function() {
 		this.$el.html(this.template());
+		this.messageView.setElement(this.$('.message-block')).render();
 		$(".content").append(this.newExpenseView.render().el);
 		$(".content").append(this.newIncomeView.render().el);
+	}
+});
+
+// to show the error and success messages
+App.MessageView = Backbone.View.extend({
+	el: ".message-block",
+	template: _.template($("#messageview-template").html()),
+	model: App.message,
+	initialize: function() {
+		this.model.on('change', this.render, this);
+	},
+	render: function() {
+		this.$el.html(this.template(this.model));
 	}
 });
 
 App.NewExpenseView = Backbone.View.extend({
 	tagName: "div",
 	template: _.template($("#newexpenseview-template").html()),
+	initialize: function() {
+		this.model = new App.Entry({});
+
+		this.model.on('change', this.render, this);
+	},
 	render: function() {
 		this.$el.html(this.template());
 		return this;
+	},
+	events: {
+		"submit #newexpense-form": "checkAndSave"
+	},
+	checkAndSave: function() {
+		$("#newexpense-fieldset").attr("disabled","disabled");
+		$("#newexpense-submit").attr("disabled","disabled");
+
+		this.model.save(this.getAttributes(), {
+			success: function(model, response, options) {
+				//console.log(response);
+				//console.log("data added successfully");
+				
+				updateMessage({
+					success: " New Expense Added successfully. "	
+				});
+			},
+			error: function(model, error, options) {
+				$(".newexpense-error-block").html(error.description);
+				
+				$("#newexpense-fieldset").removeAttr("disabled");
+				$("#newexpense-submit").removeAttr("disabled");
+			}
+
+		});
+
+		return false;
+	},
+	getAttributes: function() {
+		var safe = {};
+		
+		safe.amount = $("#expense-amt").val().trim();
+		safe.tag = $("#expense-tag").val().trim();
+		safe.details = $("#expense-detail").val().trim();
+		
+		//TODO : may be we need to update the user information using user.me()
+		//waiting for me before return problem
+		safe.user = App.user.get('username');
+		safe.org = App.user.get('org');
+		safe.type = "debit";
+		return safe;
+
 	}
 
 });
@@ -274,10 +394,59 @@ App.NewExpenseView = Backbone.View.extend({
 App.NewIncomeView = Backbone.View.extend({
 	tagName: "div",
 	template: _.template($("#newincomeview-template").html()),
+	initialize: function() {
+		this.model = new App.Entry({});
+
+		this.model.on('change', this.render, this);
+	},
 	render: function() {
 		this.$el.html(this.template());
 		return this;
+	},
+	events: {
+		"submit #newincome-form": "checkAndSave"
+	},
+	checkAndSave: function() {
+		$("#newincome-fieldset").attr("disabled","disabled");
+		$("#newincome-submit").attr("disabled","disabled");
+
+		this.model.save(this.getAttributes(), {
+			success: function(model, response, options) {
+				//console.log(response);
+				//console.log("data added successfully");
+				
+				updateMessage({
+					success: " New Income Added successfully. "	
+				});
+			},
+			error: function(model, error, options) {
+				$(".newincome-error-block").html(error.description);
+				
+				$("#expense-error-tag").style.visibility = visible; 
+				$("#newincome-fieldset").removeAttr("disabled");
+				$("#newincome-submit").removeAttr("disabled");
+			}
+
+		});
+
+		return false;
+	},
+	getAttributes: function() {
+		var safe = {};
+		
+		safe.amount = $("#income-amt").val().trim();
+		safe.tag = $("#income-tag").val().trim();
+		safe.details = $("#income-detail").val().trim();
+		
+		//TODO : may be we need to update the user information using user.me()
+		//waiting for me before return problem
+		safe.user = App.user.get('username');
+		safe.org = App.user.get('org');
+		safe.type = "credit";
+		return safe;
+
 	}
+
 
 });
 
