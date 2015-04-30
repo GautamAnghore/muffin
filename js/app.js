@@ -80,7 +80,7 @@ _.extend(App.UserCollection.prototype, Kinvey.Backbone.UserCollectionMixin);
 // |||||||||||||||||||||||||||||||||| Views |||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 App.HomeView = Backbone.View.extend({
-	el: '.container',
+	el: '.container-holder',
 	template: _.template($('#home-template').html()),
 	render: function() {
 		this.$el.html(this.template(App.user));
@@ -88,7 +88,7 @@ App.HomeView = Backbone.View.extend({
 });
 
 App.SignupView = Backbone.View.extend({
-	el: '.container',
+	el: '.container-holder',
 	template: _.template($('#signup-template').html()),
 	render: function() {
 		this.$el.html(this.template());
@@ -157,7 +157,7 @@ App.SignupView = Backbone.View.extend({
 
 
 App.LoginView = Backbone.View.extend({
-	el: '.container',
+	el: '.container-holder',
 	template: _.template($('#login-template').html()),
 	render: function() {
 		this.$el.html(this.template());
@@ -203,11 +203,88 @@ App.LoginView = Backbone.View.extend({
 	}
 });
 
+App.DashboardView = Backbone.View.extend({
+	el: ".container-holder",
+	template: _.template($("#dashboard-template").html()),
+	initialize: function() {
+		this.headerView = new App.HeaderView();
+		this.sidebarView = new App.SidebarView();
+		this.contentView = new App.ContentView();
+		this.footerView = new App.FooterView();
+	},
+	render: function() {
+		this.$el.html(this.template());
 
+		this.headerView.setElement(this.$('.main-header')).render();
+		this.sidebarView.setElement(this.$('.main-sidebar')).render();
+		this.contentView.setElement(this.$('.content-wrapper')).render();
+		this.footerView.setElement(this.$('.main-footer')).render();
+
+	}
+});
+
+App.HeaderView = Backbone.View.extend({
+	el: ".main-header",
+	template: _.template($("#headerview-template").html()),
+	render: function() {
+		this.$el.html(this.template());
+	}
+});
+
+App.SidebarView = Backbone.View.extend({
+	el: ".main-sidebar",
+	template: _.template($("#sidebarview-template").html()),
+	render: function() {
+		this.$el.html(this.template());
+	}
+});
+
+App.FooterView = Backbone.View.extend({
+	el: ".main-footer",
+	template: _.template($("#footerview-template").html()),
+	render: function() {
+		this.$el.html(this.template());
+	}
+});
+
+App.ContentView = Backbone.View.extend({
+	el: ".content-wrapper",
+	template: _.template($("#contentview-template").html()),
+	initialize: function() {
+		this.newExpenseView = new App.NewExpenseView();
+		this.newIncomeView = new App.NewIncomeView();
+	},
+	render: function() {
+		this.$el.html(this.template());
+		$(".content").append(this.newExpenseView.render().el);
+		$(".content").append(this.newIncomeView.render().el);
+	}
+});
+
+App.NewExpenseView = Backbone.View.extend({
+	tagName: "div",
+	template: _.template($("#newexpenseview-template").html()),
+	render: function() {
+		this.$el.html(this.template());
+		return this;
+	}
+
+});
+
+App.NewIncomeView = Backbone.View.extend({
+	tagName: "div",
+	template: _.template($("#newincomeview-template").html()),
+	render: function() {
+		this.$el.html(this.template());
+		return this;
+	}
+
+});
 
 var homeView = new App.HomeView();
 var signupView = new App.SignupView();
 var loginView = new App.LoginView();
+var dashboardView = new App.DashboardView();
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||||||||||| Routers |||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -217,7 +294,8 @@ App.AppRouter = Backbone.Router.extend({
 		'': 'home',
 		'login': 'login',
 		'getstarted': 'signup',
-		'logout': 'logout'
+		'logout': 'logout',
+		'dashboard': 'dashboard'
 	},
 	home: function() {
 		if(App.errorMsg !== "") {
@@ -264,6 +342,15 @@ App.AppRouter = Backbone.Router.extend({
 		else {
 			App.errorMsg += "No User Logged In";
 			App.router.navigate('', {trigger: true});
+		}
+	},
+	dashboard: function() {
+		if(App.user.isLoggedIn()) {
+			dashboardView.render();
+		}
+		else {
+			App.errorMsg += "Invalid Access. You are not logged in. Login and try again.";
+			App.router.navigate('login', {trigger: true});
 		}
 	}
 });
