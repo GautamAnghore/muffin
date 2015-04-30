@@ -19,11 +19,106 @@
 		<header class="main-header"></header>
 		<section class="main-content"></section>
 	</div>
-	
+
 	<!-- ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
 	<!-- |||||||||||||||||||||||||||||||||||||Templates||||||||||||||||||||||||||||||||||||||||| -->
 	<!-- ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
+	
+	<!-- HomeView template -->
+	<script type="text/template" id="home-template">
+		<% if(obj.isLoggedIn()) { %>
+			<p><%- obj.get('username') %></p>
+			<a href="#/logout" class="btn btn-danger">Logout</a>
+		<% } else { %>
+			<p><button class="btn btn-success">Login</button></p>
+		<% } %>
+		<header class="main-header col-md-12">
+			<center>
+				<h1 class="main-heading">muffin</h1>
+				<h3 class="main-tagline">app to solve financial management and analysis problems</h3>
+			</center>
+		</header>
+		<section class="main-content col-md-8 col-md-offset-2">
+			<p class="main-app-description">
+				Features : Employees in the organization can monitor their expenses. Managers can view the analysis of expenditures by various employees on various utilities. 
+				The app is built using Backbone.js. The datastore is provided by Kinvey as BaaS(Backend as a Service). The visualization tool used is c3.js.
+			</p>
+			<center>
+				<button class="btn-lg btn-warning">Get Started</button>
+			</center>
+		</section>
+	</script>
 
+	<!-- SignupView template-->
+	<script type="text/template" id="signup-template">
+		<header class="main-header col-md-12">
+			<center>
+				<h1 class="signup-heading">muffin</h1>
+				<h3 class="signup-tagline">app to solve financial management and analysis problems</h3>
+			</center>
+		</header>
+		<section class="main-content">
+			<section class="signup-form col-md-8 col-md-offset-2">
+				<center>
+				<form class="form-horizontal" id="signup-form">
+					<legend>Signup</legend>
+					<fieldset id="signup-fieldset">
+					<div class="form-group has-success">
+						<label for="fname" class="sr-only">First Name</label>
+						<div class="input-group">
+							<div class="input-group-addon">First Name</div>
+							<input type="text" class="form-control" id="fname" name="fname" placeholder="First Name" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="lname" class="sr-only">Last Name</label>
+						<div class="input-group">
+							<div class="input-group-addon">Last Name</div>
+							<input type="text" class="form-control" id="lname" name="lname" placeholder="Last Name" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="org" class="sr-only">organization</label>
+						<div class="input-group">
+							<div class="input-group-addon">Organization</div>
+							<input type="text" class="form-control" id="org" name="org" placeholder="abc org" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="username" class="sr-only">Username</label>
+						<div class="input-group">
+							<div class="input-group-addon">Username</div>
+							<input type="text" class="form-control" id="username" name="username" placeholder="username" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="password" class="sr-only">Password</label>
+						<div class="input-group">
+							<div class="input-group-addon">Password</div>
+							<input type="password" class="form-control" id="password" name="password" placeholder="password" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="confirm" class="sr-only">Confirm</label>
+						<div class="input-group">
+							<div class="input-group-addon">Confirm</div>
+							<input type="password" class="form-control" id="confirm" name="confirm" placeholder="confirm password" required>
+						</div>
+					</div>
+					<div class="form-group has-success">
+						<label for="email" class="sr-only">Email </label>
+						<div class="input-group">
+							<div class="input-group-addon">Email </div>
+							<input type="email" class="form-control" id="email" name="email" placeholder="me@organization.com" required>
+						</div>
+					</div>
+					<button type="submit" class="btn-lg btn-success" id="signup-submit-button">Sign Up</button>
+					</fieldset>
+				</form>
+				</center>
+			</section>
+		</section>
+	</script>
 
 	<!-- ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| -->
 	<!-- |||||||||||||||||||||||||||||||||||||Includes|||||||||||||||||||||||||||||||||||||||||| -->
