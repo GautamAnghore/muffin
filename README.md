@@ -1,6 +1,6 @@
 muffin
 ======
-Live : http://gautamanghore.github.io/muffin/
+__Live : http://gautamanghore.github.io/muffin/__
 
 
 App to provide a solution for organizations and individuals to maintain their financial records and do quick analysis.
@@ -32,18 +32,13 @@ App is based on Backbone.js with Kinvey used for data-store (BaaS).
 
 ##Libraries/Services Used
  
- - [Backbone.js](http://backbonejs.org/)
-   
+ - [Backbone.js](http://backbonejs.org/)<br/>
    Based on
    + [jquery](https://jquery.com/)
    + [underscore.js](http://underscorejs.org/)
-
  - Backend : [Kinvey](http://www.kinvey.com/) (Backend as a Service)
- 
  - [Bootstrap](http://getbootstrap.com/)
- 
  - Awesome Dashboard Theme : [AdminLTE](https://github.com/almasaeed2010/AdminLTE)
-
  - For graphs, D3 based library : [c3.js](http://c3js.org/)
 
 ##Note

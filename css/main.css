@@ -1,0 +1,45 @@
+.main-heading {
+	font-size:120px;
+	color: #BD362F;
+}
+
+.main-tagline {
+	font-size: 20px;
+	margin-top: -25px;
+	color: #0088cc;
+}
+
+.main-app-description {
+	
+  font-size: 25px;
+  color: #A2A9AF;
+  text-align: justify;
+  margin:100px 50px 50px 50px;
+}
+
+.signup-heading {
+	font-size:60px;
+	color: #BD362F;
+}
+
+.signup-tagline {
+	font-size: 18px;
+	margin-top: -15px;
+	margin-bottom: 10px;
+	color: #0088cc;
+}
+
+.login-heading {
+	font-size:120px;
+	color: #BD362F;
+}
+
+.login-tagline {
+	font-size: 20px;
+	margin-top: -25px;
+	color: #0088cc;
+}
+
+.login-form {
+	margin-top: 70px;
+}
