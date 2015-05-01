@@ -50,6 +50,16 @@ function htmlEncode(value){
   return $('<div/>').text(value).html();
 }
 
+// get date
+function getStringDate(numberOfDays)
+{
+	var date = new Date();
+	date.setDate(date.getDate() + numberOfDays);
+	var dd = date.getDate();
+	var month = date.getMonth() + 1;
+	var year = date.getFullYear();
+	return year + "/" + month + "/" + dd;
+}
 
 // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 // |||||||||||||||||||||||||| Models and Collections ||||||||||||||||||||||||||||||||||||||||||||||
@@ -322,7 +332,7 @@ App.ContentView = Backbone.View.extend({
 	render: function() {
 		this.$el.html(this.template());
 		this.messageView.setElement(this.$('.message-block')).render();
-		$("#row-1").append(this.reportChartView.el);
+		$("#row-1").append(this.reportChartView.render().el);
 		$("#row-2").append(this.newExpenseView.render().el);
 		$("#row-2").append(this.newIncomeView.render().el);
 		$("#row-3").append(this.recentExpenseView.render().el);
@@ -396,11 +406,8 @@ App.NewExpenseView = Backbone.View.extend({
 		safe.user = App.user.get('username');
 		safe.org = App.user.get('org');
 		safe.type = "debit";
-		//var today = new Date();
-		//var curr_date = today.getDate();
-		//var curr_month = today.getMonth()+1;
-		//var curr_year = today.getFullYear();
-		safe.date = new Date(); 
+		//0 for current date string
+		safe.date = getStringDate(0); 
 		return safe;
 
 	}
@@ -446,7 +453,7 @@ App.NewIncomeView = Backbone.View.extend({
 			error: function(model, error, options) {
 				$(".newincome-error-block").html(error.description);
 				
-				$("#expense-error-tag").style.visibility = visible; 
+				$("#income-error-tag").style.visibility = visible; 
 				$("#newincome-fieldset").removeAttr("disabled");
 				$("#newincome-submit").removeAttr("disabled");
 			}
@@ -458,21 +465,17 @@ App.NewIncomeView = Backbone.View.extend({
 	getAttributes: function() {
 		var safe = {};
 		
-		safe.amount = parseInt($("#expense-amt").val().trim());
-		safe.tag = $("#expense-tag").val().trim();
-		safe.details = $("#expense-detail").val().trim();
+		safe.amount = parseInt($("#income-amt").val().trim());
+		safe.tag = $("#income-tag").val().trim();
+		safe.details = $("#income-detail").val().trim();
 		
 		//TODO : may be we need to update the user information using user.me()
 		//waiting for me before return problem
 		safe.user = App.user.get('username');
 		safe.org = App.user.get('org');
 		safe.type = "credit";
-		//var today = new Date();
-		//var curr_date = today.getDate();
-		//var curr_month = today.getMonth()+1;
-		//var curr_year = today.getFullYear();
-		//safe.date = curr_date + "-" + curr_month + "-" + curr_year; 
-		safe.date = new Date();
+		
+		safe.date = getStringDate(0);
 		return safe;
 
 	}
@@ -570,40 +573,57 @@ App.ReportChartView = Backbone.View.extend({
 	tagName: "div",
 	template: _.template($("#reportchartview-template").html()),
 	initialize: function(expense, income) {
+
 		this.expenseCollection = new App.EntryBook([]);
 		this.incomeCollection = new App.EntryBook([]);
-
+		this.jsonResult = [];
+		this.chart = undefined;
 		//this.expenseCollection.on('sync', this.render, this);
 		//this.incomeCollection.on('sync', this.render, this);
 
-		expense.on('sync', this.render, this);
-		income.on('sync', this.render, this);
+		expense.on('sync', this.updateChart, this);
+		income.on('sync', this.updateChart, this);
 		
 		this.collection = new App.EntryBook([]);
 	},
 	render: function() {
 		
+		// first fetch the debit/expense data
 		var query = new Kinvey.Query();
 		query.equalTo('user',App.user.get('username'))
 				.and()
 				.equalTo('type','debit')
+				.and()
+				.greaterThanOrEqualTo('date', getStringDate(-365))
 				.descending('date');
 
 		var that = this;
 		this.expenseCollection.fetch({
+
+			//then fetch the credit/income data
 			query: query,
 			success: function(collection, response, options) {
 				
+				// TODO : split the generateGraph() function to 
+				// populate the jsonResult for income and expense
+				// individually and call the function for expense 
+				// as the expense data is ready.
+
 				var query = new Kinvey.Query();
 				query.equalTo('user',App.user.get('username'))
 						.and()
 						.equalTo('type','credit')
+						.and()
+						.greaterThanOrEqualTo('date', getStringDate(-365))
 						.descending('date');
+				
 				var _that = that;
 				that.incomeCollection.fetch({
 					query: query,
 					success: function(collection, response, options) {
-						_that.generateGraph();		
+						//this has to be broken down
+						_that.generateGraphData();
+						_that.renderChart();		
 					},
 					error: function(collection, error, options) {
 						updateMessage({
@@ -620,58 +640,53 @@ App.ReportChartView = Backbone.View.extend({
 				
 			}
 		});
-
-
-		
-		//console.log(jsonResult);
-
+	
 		this.$el.html(this.template());
 		return this;
 	},
-generateGraph: function () {
-
-	// Generating data for graph plotting
-	// TODO : more efficient way
-	var jsonResult = [];
-		/*
-		var jsonResult = [{
-			date: '',
-			expense: ,
-			income: ,
-			total: 
-		}];
-		
-		item = {
-			amount: ,
-			date: '',
-			details: '',
-			org: '',
-			tag: '',
-			type: '',	
-			user: ''	//will be same, no worries
-		}
-		*/		
+	generateGraphData: function () {
+		// Generating data for graph plotting
+		// TODO : more efficient way
+			/*
+			var this.jsonResult = [{
+				date: '',
+				expense: ,
+				income: ,
+				total: 
+			}];
+			
+			item = {
+				amount: ,
+				date: '',
+				details: '',
+				org: '',
+				tag: '',
+				type: '',	
+				user: ''	//will be same, no worries
+			}
+			*/		
+		var that = this;
 		this.expenseCollection.each(function(item) {
-			//loop through jsonResult to find if data of that date already exists
+			//loop through this.jsonResult to find if data of that date already exists
 			//if yes add the amount to the expense
 			//if not, add a json doc of that date
 
 			var flag = false;
-			for(var i=0; i<jsonResult.length; i++)
+			for(var i=0; i<that.jsonResult.length; i++)
 			{
 				var current = new Date(item.get('date'));
-				if(jsonResult[i].date.getTime() == current.getTime())
+				if(that.jsonResult[i].date.getTime() == current.getTime())
 				{
-					jsonResult[i].expense += item.get('amount');
+					that.jsonResult[i].expense -= item.get('amount');
 					flag = true;
 					break;
 				}
 			} 
 			if(!flag)
 			{
-				jsonResult.push({
+				that.jsonResult.push({
 					date: new Date(item.get('date')),
-					expense: item.get('amount'),
+					expense: - item.get('amount'),
 					income: 0,
 					total: 0
 				});
@@ -681,19 +696,19 @@ generateGraph: function () {
 		//same for income
 		this.incomeCollection.each(function(item) {
 			var flag = false;
-			for(var i=0; i<jsonResult.length; i++)
+			for(var i=0; i<that.jsonResult.length; i++)
 			{
 				var current = new Date(item.get('date'));
-				if(jsonResult[i].date.getTime() == current.getTime())
+				if(that.jsonResult[i].date.getTime() == current.getTime())
 				{
-					jsonResult[i].income += item.get('amount');
+					that.jsonResult[i].income += item.get('amount');
 					flag = true;
 					break;
 				}
 			} 
 			if(!flag)
 			{
-				jsonResult.push({
+				that.jsonResult.push({
 					date: new Date(item.get('date')),
 					expense: 0,
 					income: item.get('amount'),
@@ -702,30 +717,37 @@ generateGraph: function () {
 			}
 		});
 
-		for(var i=0; i<jsonResult.length; i++)
+		for(var i=0; i<this.jsonResult.length; i++)
 		{
-			jsonResult[i].total = jsonResult[i].income - jsonResult[i].expense;
+			this.jsonResult[i].total = this.jsonResult[i].income + this.jsonResult[i].expense;
 		}
 		
+		
+	},
+	renderChart: function() {
+		var that = this;
 		setTimeout(function () {
-			var chart = c3.generate({
+			that.chart = c3.generate({
 				bindto: '#chart-complete',
 				data: {
-					json: jsonResult,
+					json: that.jsonResult,
 					keys: {
 						x: 'date',
 						value: ['expense', 'income', 'total']
 					},
+					groups: [['expense','income']],
 					type: 'bar',
 					types: {
-						total: 'area'
+						total: 'spline'
 					}
 				},
 				axis: {
 					x: {
 						type:'timeseries',
 						tick: {
-							format: '%d-%m-%Y'
+							fit: true,
+							format: '%e-%b-%y',
+							rotate:55
 						}
 					}
 				}
@@ -733,7 +755,60 @@ generateGraph: function () {
 
 		}, 1000);
 		
+	},
+	updateChart: function() {
+		// this function is called to update the view
+		// of chart using flow not to reload the whole data
+		// the initial data is already in this.jsonResult
+		// we only need the data of today as added element will be of today
 
+		// first fetch the debit/expense data
+		var query = new Kinvey.Query();
+		query.equalTo('user',App.user.get('username'))
+				.and()
+				.equalTo('type','debit')
+				.and()
+				.greaterThanOrEqualTo('date', getStringDate(-1))
+				.descending('date');
+
+		var that = this;
+		this.expenseCollection.fetch({
+
+			query: query,
+			success: function(collection, response, options) {
+				
+				var query = new Kinvey.Query();
+				query.equalTo('user',App.user.get('username'))
+						.and()
+						.equalTo('type','credit')
+						.and()
+						.greaterThanOrEqualTo('date', getStringDate(-1))
+						.descending('date');
+				
+				var _that = that;
+				that.incomeCollection.fetch({
+					query: query,
+					success: function(collection, response, options) {
+						//this has to be broken down
+						_that.generateGraphData();
+						_that.renderChart();		
+					},
+					error: function(collection, error, options) {
+						updateMessage({
+							error: error.description
+						});
+						
+					}
+				});		
+			},
+			error: function(collection, error, options) {
+				updateMessage({
+					error: error.description
+				});
+				
+			}
+		});
+	
 	}
 });
 
