@@ -92,6 +92,8 @@ App.EntryBook = Backbone.Collection.extend({
 });
 _.extend(App.EntryBook.prototype, Kinvey.Backbone.CollectionMixin);
 
+App.entryBook = new App.EntryBook([]);
+
 App.Message = Backbone.Model.extend({
 	defaults: {
 		msg: "",
@@ -101,6 +103,7 @@ App.Message = Backbone.Model.extend({
 });
 
 App.message = new App.Message({});
+
 
 // Helper function to set the message(msg, success, error) in such a way that
 // the message get cleared after some time interval.
@@ -309,15 +312,19 @@ App.ContentView = Backbone.View.extend({
 	el: ".content-wrapper",
 	template: _.template($("#contentview-template").html()),
 	initialize: function() {
+		this.messageView = new App.MessageView();
 		this.newExpenseView = new App.NewExpenseView();
 		this.newIncomeView = new App.NewIncomeView();
-		this.messageView = new App.MessageView();
+		this.recentExpenceView = new App.RecentExpenseView(this.newExpenseView.model);
+		this.recentIncomeView = new App.RecentIncomeView(this.newIncomeView.model);
 	},
 	render: function() {
 		this.$el.html(this.template());
 		this.messageView.setElement(this.$('.message-block')).render();
 		$(".content").append(this.newExpenseView.render().el);
 		$(".content").append(this.newIncomeView.render().el);
+		$(".content").append(this.recentExpenceView.render().el);
+		$(".content").append(this.recentIncomeView.render().el);
 	}
 });
 
@@ -340,9 +347,11 @@ App.NewExpenseView = Backbone.View.extend({
 	initialize: function() {
 		this.model = new App.Entry({});
 
-		this.model.on('change', this.render, this);
+		this.model.on('sync', this.render, this);
 	},
 	render: function() {
+
+		this.model.clear({silent: true});
 		this.$el.html(this.template());
 		return this;
 	},
@@ -385,6 +394,7 @@ App.NewExpenseView = Backbone.View.extend({
 		safe.user = App.user.get('username');
 		safe.org = App.user.get('org');
 		safe.type = "debit";
+		safe.date = new Date();
 		return safe;
 
 	}
@@ -397,9 +407,18 @@ App.NewIncomeView = Backbone.View.extend({
 	initialize: function() {
 		this.model = new App.Entry({});
 
-		this.model.on('change', this.render, this);
+		// 'change' event monitor only local change
+		// 'sync' event is fired when the data is changed on server
+		// and a success response is recieved
+		this.model.on('sync', this.render, this);
 	},
 	render: function() {
+		
+		// all attributes cleared so that the existing record is not 
+		// updated as a result of save
+		// silent:true to avoid firing the change event
+		this.model.clear({silent: true});
+
 		this.$el.html(this.template());
 		return this;
 	},
@@ -414,7 +433,6 @@ App.NewIncomeView = Backbone.View.extend({
 			success: function(model, response, options) {
 				//console.log(response);
 				//console.log("data added successfully");
-				
 				updateMessage({
 					success: " New Income Added successfully. "	
 				});
@@ -443,11 +461,99 @@ App.NewIncomeView = Backbone.View.extend({
 		safe.user = App.user.get('username');
 		safe.org = App.user.get('org');
 		safe.type = "credit";
+		safe.date = new Date();
 		return safe;
 
 	}
 
 
+});
+
+App.RecentExpenseView = Backbone.View.extend({
+	tagName: "div",
+	template: _.template($("#recentexpenseview-template").html()),
+	initialize: function(obj) {
+		//whenever there is addition of data in collection, rerender
+		// it must have been implemented using App.entryBook
+		// TODO
+		//App.entryBook.on('add', this.render, this);
+		
+		//this is monitoring if new data is being synced with server
+		// and if yes then it is getting updated
+		obj.on('sync', this.render, this);
+
+		this.collection = new App.EntryBook([]);
+	},
+	render: function() {
+
+		var that = this;
+
+		var query = new Kinvey.Query();
+		query.equalTo('user',App.user.get('username'))
+				.and()
+				.equalTo('type','debit')
+				.descending('date')
+				.limit(5);
+
+		this.collection.fetch({
+			query: query,
+			success: function(collection, response, options) {
+				//console.log(collection);
+				that.$el.html(that.template({results: collection.toJSON()}));		
+			},
+			error: function(collection, error, options) {
+				updateMessage({
+					error: error.description
+				});
+				
+			}
+		});
+
+		// returning is necessary here and not in the callback function of fetch as
+		// otherwise at the time of rendering, this view will not return anything and
+		// not get attached to the main DOM
+		return this;
+		
+
+	}
+});
+
+App.RecentIncomeView = Backbone.View.extend({
+	tagName: "div",
+	template: _.template($("#recentincomeview-template").html()),
+	initialize: function(obj) {
+		obj.on('sync', this.render, this);
+
+		this.collection = new App.EntryBook([]);
+	},
+	render: function() {
+
+		var that = this;
+
+		var query = new Kinvey.Query();
+		query.equalTo('user',App.user.get('username'))
+				.and()
+				.equalTo('type','credit')
+				.descending('date')
+				.limit(5);
+
+		this.collection.fetch({
+			query: query,
+			success: function(collection, response, options) {
+				console.log(collection);
+				that.$el.html(that.template({results: collection.toJSON()}));		
+			},
+			error: function(collection, error, options) {
+				updateMessage({
+					error: error.description
+				});
+				
+			}
+		});
+		return this;
+		
+
+	}
 });
 
 var homeView = new App.HomeView();
