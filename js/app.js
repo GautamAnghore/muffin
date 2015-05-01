@@ -730,9 +730,10 @@ App.ReportChartView = Backbone.View.extend({
 		
 	},
 	renderChart: function() {
+		var chart;
 		var that = this;
 		setTimeout(function () {
-			that.chart = c3.generate({
+			chart = c3.generate({
 				bindto: '#chart-complete',
 				data: {
 					json: that.jsonResult,
@@ -873,7 +874,14 @@ App.AppRouter = Backbone.Router.extend({
 			user.logout({
 				success: function(model, response, options) {
 					App.errorMsg += response.fname + " ! you are successfully logged out!";
-					App.router.navigate('', {trigger: true});
+					//temporary solution
+					//problem : when user logout, then also some variables are set as the state
+					// of the script remains same. So when other user log in, the previous values
+					// from previous users like chart might show.
+					// this is a temp solution to reload so as to init everything again
+					// problem with this approach : chrome asking for saving password after signing out
+					App.router.navigate('');
+					location.reload(true);
 				},
 				error: function(model, error, options) {
 					App.errorMsg += "Error while logging out" + error.description;
@@ -882,7 +890,6 @@ App.AppRouter = Backbone.Router.extend({
 			});
 		}
 		else {
-			App.errorMsg += "No User Logged In";
 			App.router.navigate('', {trigger: true});
 		}
 	},
