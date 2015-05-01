@@ -43,10 +43,12 @@
 					<% if(obj.isLoggedIn()) { %>
 						<ul class="nav navbar-nav navbar-right">
 							<li><a href="#/logout"><button class="btn btn-danger navbar-btn">Logout</button></a></li>
+							<li><a href="#/dashboard"><button class="btn btn-warning navbar-btn">Dashboard</button></a></li>
 						</ul>
 						<p class="navbar-text navbar-right">Signed in as <%- obj.get('username') %></p>
 					<% } else { %>
-						<p class="navbar-right"><a href="#/login" class="btn btn-success navbar-btn">Login</a></p>
+						<p class="navbar-right"><a href="#/login" class="btn btn-success navbar-btn">Login</a>
+						</p>
 					<% } %>
 				</div>
 			</div>
@@ -60,11 +62,11 @@
 		</header>
 		<section class="main-content col-md-8 col-md-offset-2">
 			<p class="main-app-description">
-				Features : Employees in the organization can monitor their expenses. Managers can view the analysis of expenditures by various employees on various utilities. 
+				Add Incomes and Expenses Instantly. View Recent Account activity. Analyse the financials with graph of cash flows.  
 				The app is built using Backbone.js. The datastore is provided by Kinvey as BaaS(Backend as a Service). The visualization tool used is c3.js.
 			</p>
 			<center>
-				<a href="#/getstarted" class="btn-lg btn-warning">Get Started</a>
+				<a href="#/getstarted" class="btn btn-lg btn-warning">Get Started</a>
 			</center>
 		</section>
 	</script>
@@ -251,14 +253,14 @@
 			<ul class="sidebar-menu">
 				<li class="header">DASHBOARD</li>
 				<!-- Optionally, you can add icons to the links -->
-				<li class="active"><a href="#"><i class='fa fa-link'></i><span>Expenses</span></a></li>
-				<li><a href="#"><i class='fa fa-link'></i> <span>Income</span></a></li>
-				<li><a href="#"><i class='fa fa-link'></i> <span>Account Statement</span></a></li>
+				<li class="active"><a href="javascript:void(0)"><i class='fa fa-link'></i><span>Expenses</span></a></li>
+				<li><a href="javascript:void(0)"><i class='fa fa-link'></i> <span>Income</span></a></li>
+				<li><a href="javascript:void(0)"><i class='fa fa-link'></i> <span>Account Statement</span></a></li>
 				<li class="treeview">
-				  <a href="#/dashboard"><i class='fa fa-link'></i> <span>Organization</span> <i class="fa fa-angle-left pull-right"></i></a>
+				  <a href="javascript:void(0)"><i class='fa fa-link'></i> <span>Organization</span> <i class="fa fa-angle-left pull-right"></i></a>
 				  <ul class="treeview-menu">
-				    <li><a href="#">Expenses</a></li>
-				    <li><a href="#">Income</a></li>
+				    <li><a href="javascript:void(0)">Expenses</a></li>
+				    <li><a href="javascript:void(0)">Income</a></li>
 				  </ul>
 				</li>
 			</ul><!-- /.sidebar-menu -->
@@ -459,7 +461,7 @@
 							<li class="item">
 								<div class="product-info">
 									<a href="javascript::;" class="product-title"><b>Rs.<%- result.amount %></b>
-									<span class="label label-danger pull-right"><%- result.tag %></span>
+									<span class="label label-success pull-right"><%- result.tag %></span>
 									</a>
 									<span class="product-description"><%- result.details %></span>
 								</div>
@@ -483,7 +485,7 @@
 				<div class="box-body">
 					<div class="row">
 						<div class="col-md-12">
-							<p class="text-center">Financials</p>
+							<p class="text-center">Yearly Financials</p>
 							<div id="chart-complete">
 								
 							</div>

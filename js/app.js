@@ -199,11 +199,11 @@ App.SignupView = Backbone.View.extend({
 			}, {
 				success: function(model, response, options) {
 					//TODO : navigate to the dashboard
-					App.router.navigate('', {trigger: true});
+					App.router.navigate('dashboard', {trigger: true});
 				},
 				error: function(model, error, options) {
 					App.errorMsg += "Error while creating User : " + error.description;
-					App.router.navigate('dashboard', {trigger: true});
+					App.router.navigate('', {trigger: true});
 				}
 			});
 
@@ -841,11 +841,12 @@ App.AppRouter = Backbone.Router.extend({
 		'dashboard': 'dashboard'
 	},
 	home: function() {
+
+		homeView.render();
+
 		if(App.errorMsg !== "") {
 			alert(App.errorMsg);
 		}
-
-		homeView.render();
 		// clear error messages
 		App.errorMsg = ""; 
 	},
@@ -856,7 +857,14 @@ App.AppRouter = Backbone.Router.extend({
 		}
 		else {
 			signupView.render();
+
+			if(App.errorMsg !== "") {
+				alert(App.errorMsg);
+			}
+			// clear error messages
+			App.errorMsg = ""; 
 		}
+
 	},
 	login: function() {
 		if(App.user.isLoggedIn()) {
@@ -866,6 +874,12 @@ App.AppRouter = Backbone.Router.extend({
 		}
 		else {
 			loginView.render();
+
+			if(App.errorMsg !== "") {
+				alert(App.errorMsg);
+			}
+			// clear error messages
+			App.errorMsg = ""; 
 		}
 	},
 	logout: function() {
@@ -896,6 +910,12 @@ App.AppRouter = Backbone.Router.extend({
 	dashboard: function() {
 		if(App.user.isLoggedIn()) {
 			dashboardView.render();
+				
+			if(App.errorMsg !== "") {
+				alert(App.errorMsg);
+			}
+			// clear error messages
+			App.errorMsg = ""; 
 		}
 		else {
 			App.errorMsg += "Invalid Access. You are not logged in. Login and try again.";
