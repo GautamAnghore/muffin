@@ -203,7 +203,7 @@ App.SignupView = Backbone.View.extend({
 				},
 				error: function(model, error, options) {
 					App.errorMsg += "Error while creating User : " + error.description;
-					App.router.navigate('', {trigger: true});
+					App.router.navigate('dashboard', {trigger: true});
 				}
 			});
 
@@ -253,7 +253,12 @@ App.LoginView = Backbone.View.extend({
 		}, {
 			success: function(model, response, options) {
 				//TODO : navigate to the dashboard
-				App.router.navigate('', {trigger: true});
+				App.user = Kinvey.Backbone.getActiveUser();
+				App.user.me({
+					success: function(model, response, options) {
+						App.router.navigate("dashboard", {trigger: true});
+					}
+				});
 			},
 			error: function(model, error, options) {
 				
@@ -298,7 +303,7 @@ App.HeaderView = Backbone.View.extend({
 	el: ".main-header",
 	template: _.template($("#headerview-template").html()),
 	render: function() {
-		this.$el.html(this.template());
+		this.$el.html(this.template({user: App.user}));
 	}
 });
 
@@ -577,7 +582,7 @@ App.ReportChartView = Backbone.View.extend({
 		this.expenseCollection = new App.EntryBook([]);
 		this.incomeCollection = new App.EntryBook([]);
 		this.jsonResult = [];
-		this.chart = undefined;
+		//this.chart = null;
 		//this.expenseCollection.on('sync', this.render, this);
 		//this.incomeCollection.on('sync', this.render, this);
 
@@ -590,7 +595,7 @@ App.ReportChartView = Backbone.View.extend({
 		
 		// first fetch the debit/expense data
 		var query = new Kinvey.Query();
-		query.equalTo('user',App.user.get('username'))
+		query.equalTo('user', App.user.get('username'))
 				.and()
 				.equalTo('type','debit')
 				.and()
@@ -750,6 +755,12 @@ App.ReportChartView = Backbone.View.extend({
 							rotate:55
 						}
 					}
+				},
+				bar: {
+					width: {
+						ratio: 0.2
+					},
+					spacing: 2
 				}
 			});
 
@@ -764,7 +775,7 @@ App.ReportChartView = Backbone.View.extend({
 
 		// first fetch the debit/expense data
 		var query = new Kinvey.Query();
-		query.equalTo('user',App.user.get('username'))
+		query.equalTo('user', App.user.get('username'))
 				.and()
 				.equalTo('type','debit')
 				.and()
@@ -850,7 +861,7 @@ App.AppRouter = Backbone.Router.extend({
 		if(App.user.isLoggedIn()) {
 			App.errorMsg += "User already Logged In";
 			//TODO : navigate to dashboard insted of home
-			App.router.navigate('', {trigger: true});
+			App.router.navigate("dashboard", {trigger: true});
 		}
 		else {
 			loginView.render();
